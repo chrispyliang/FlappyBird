@@ -11,10 +11,12 @@ import GameplayKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
+    // constants
     var bird = SKSpriteNode()
     var bg = SKSpriteNode()
     var gameStarted = false
     var scoreLabel = SKLabelNode()
+    var gameOverLabel = SKLabelNode()
     var score = 0
     var timer = Timer()
     
@@ -55,6 +57,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         upPipe.physicsBody!.contactTestBitMask = ColliderType.Object.rawValue
         upPipe.physicsBody!.categoryBitMask = ColliderType.Object.rawValue
         upPipe.physicsBody!.collisionBitMask = ColliderType.Object.rawValue
+        
+        upPipe.zPosition = -1
         
         addChild(upPipe)
         
@@ -100,24 +104,35 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func didBegin(_ contact: SKPhysicsContact) {
         
-        if contact.bodyA.categoryBitMask == ColliderType.Gap.rawValue || contact.bodyB.categoryBitMask == ColliderType.Gap.rawValue {
-            
-            score += 1
-            
-            print("Yes baby")
-            
-            scoreLabel.text = String(score)
-            
-        } else {
+        if gameOver == false {
         
-            print("oh no!")
-        
-            self.speed = 0
-        
-            gameOver = true
+            if contact.bodyA.categoryBitMask == ColliderType.Gap.rawValue || contact.bodyB.categoryBitMask == ColliderType.Gap.rawValue {
             
-            timer.invalidate()
+                score += 1
             
+                scoreLabel.text = String(score)
+            
+            } else {
+        
+                self.speed = 0
+                
+                gameOver = true
+                
+                timer.invalidate()
+                
+                gameOverLabel.fontName = "Helvetica"
+                
+                gameOverLabel.fontSize = 30
+                
+                gameOverLabel.text = "Game Over! Tap to play again."
+                
+                gameOverLabel.position = CGPoint(x: self.frame.midX, y: self.frame.midY)
+                
+                self.addChild(gameOverLabel)
+            
+                timer.invalidate()
+            
+            }
         }
         
     }
@@ -155,7 +170,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             bg.run(moveForever)
             
-            bg.zPosition = -1
+            bg.zPosition = -2
             
             self.addChild(bg)
             
@@ -227,7 +242,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         scoreLabel.text = "0"
         
-        scoreLabel.position = CGPoint(x: self.frame.midX, y: self.frame.height - 80)
+        scoreLabel.position = CGPoint(x: self.frame.midX, y: self.frame.height / 2 - 90)
         
         self.addChild(scoreLabel)
         // score ends
@@ -261,6 +276,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             self.removeAllChildren()
             
             setupGame()
+            
+            gameStarted = false
             
         }
         
